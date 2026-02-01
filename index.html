@@ -15,8 +15,8 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Lucide Icons (Versão fixa para estabilidade) -->
+    <script src="https://unpkg.com/lucide@0.263.1/dist/umd/lucide.min.js"></script>
 
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
@@ -55,7 +55,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useEffect, useMemo } = React;
+        const { useState, useEffect, useMemo, useRef } = React;
 
         // --- DATA: Roteiro de Qualificação ---
         const roteiroData = [
@@ -169,13 +169,37 @@
             }
         ];
 
-        // --- COMPONENTS ---
-
+        // --- COMPONENTE ICON SEGURO ---
+        // Esta versão corrige o bug da tela branca ao gerar o SVG manualmente
+        // em vez de manipular o DOM diretamente.
         const Icon = ({ name, size = 20, className = "" }) => {
-            React.useEffect(() => {
-                lucide.createIcons();
-            }, [name]);
-            return <i data-lucide={name} width={size} height={size} className={className}></i>;
+            const [svgHtml, setSvgHtml] = useState(null);
+
+            useEffect(() => {
+                if (window.lucide && window.lucide.icons) {
+                    // Converte kebab-case para PascalCase (ex: "message-circle" -> "MessageCircle")
+                    const pascalName = name.replace(/(^\w|-\w)/g, (clear) => clear.replace(/-/, "").toUpperCase());
+                    
+                    const iconNode = window.lucide.icons[pascalName];
+                    if (iconNode) {
+                        const svg = iconNode.toSvg({
+                            width: size,
+                            height: size,
+                            class: className
+                        });
+                        setSvgHtml(svg);
+                    }
+                }
+            }, [name, size, className]);
+
+            if (!svgHtml) return <span style={{ width: size, height: size, display: 'inline-block' }}></span>;
+
+            return (
+                <span 
+                    className="inline-flex items-center justify-center"
+                    dangerouslySetInnerHTML={{ __html: svgHtml }} 
+                />
+            );
         };
 
         const ChecklistItem = ({ item, isChecked, onToggle }) => {
@@ -291,14 +315,22 @@
             const [selectedId, setSelectedId] = useState(null);
             const [copySuccess, setCopySuccess] = useState(null);
 
+            // Reseta o estado de cópia quando muda a seleção
+            useEffect(() => {
+                setCopySuccess(false);
+            }, [selectedId]);
+
             const selectedObjection = useMemo(() => 
                 objecoesData.find(obj => obj.id === selectedId), 
             [selectedId]);
 
             const handleCopy = (text) => {
-                navigator.clipboard.writeText(text);
-                setCopySuccess(true);
-                setTimeout(() => setCopySuccess(false), 2000);
+                if (navigator.clipboard) {
+                    navigator.clipboard.writeText(text).then(() => {
+                        setCopySuccess(true);
+                        setTimeout(() => setCopySuccess(false), 2000);
+                    });
+                }
             };
 
             return (
@@ -381,10 +413,6 @@
 
         const App = () => {
             const [activeTab, setActiveTab] = useState('roteiro'); // 'roteiro' | 'objecoes'
-
-            useEffect(() => {
-                lucide.createIcons();
-            }, [activeTab]);
 
             return (
                 <div className="min-h-screen bg-gray-100 flex flex-col">
