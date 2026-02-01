@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sales Master - Roteiro e Objeções</title>
+    
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e1; 
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8; 
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        // --- DATA: Roteiro de Qualificação ---
+        const roteiroData = [
+            {
+                id: "3.1",
+                title: "3.1 Contexto do Negócio",
+                items: [
+                    "Qual o segmento da sua empresa? (Pesquisar na internet antes)",
+                    "Quantas pessoas trabalham no atendimento/vendas?",
+                    "Quantos atendimentos/conversas vocês fazem por mês?",
+                    "Vocês já usam alguma ferramenta?",
+                    { text: "Se SIM: O porquê vocês estão considerando sair da plataforma atual?", indent: true },
+                    { text: "Se SIM: Qual o orçamento disponível para essa solução?", indent: true },
+                    { text: "Se SIM: Usam alguma ferramenta de CRM ou automação? Qual a experiência?", indent: true },
+                    { text: "Se NÃO: Como gerenciam as conversas hoje? (Planilha, CRM, nenhum sistema)", indent: true },
+                    { text: "Se NÃO: Usam alguma ferramenta de CRM ou automação? Qual a experiência?", indent: true },
+                    "Precisam de integração com outros sistemas? (ERP, CRM, plataforma de pagamento)"
+                ]
+            },
+            {
+                id: "3.2",
+                title: "3.2 Canais de Atendimento",
+                items: [
+                    "Quais canais vocês usam para atender? (WhatsApp, Instagram, Messenger, Site)",
+                    "Usam WhatsApp Business comum ou API oficial?"
+                ]
+            },
+            {
+                id: "3.3",
+                title: "3.3 Dores e Desafios",
+                items: [
+                    "Qual o maior gargalo no atendimento hoje?",
+                    "Demora na resposta?",
+                    "Perda de leads?",
+                    "Desorganização das conversas?",
+                    "Falta de controle/métricas?",
+                    "Perdem vendas fora do horário comercial?",
+                    "Têm picos de demanda que a equipe não consegue absorver? (Black Friday, sazonalidade)",
+                    "Quanto tempo a equipe gasta respondendo perguntas repetitivas?",
+                    "Têm problema com rotatividade de atendentes?"
+                ]
+            },
+            {
+                id: "3.4",
+                title: "3.4 Situação Atual",
+                items: [
+                    "Qual a taxa de conversão atual de leads para vendas?",
+                    "Qual o tempo médio de resposta aos clientes?",
+                    "Quanto gastam mensalmente com a equipe de atendimento?"
+                ]
+            },
+            {
+                id: "3.5",
+                title: "3.5 Objetivos e Expectativas",
+                items: [
+                    "Qual o principal objetivo com a automação?",
+                    "Aumentar conversão?",
+                    "Reduzir custos?",
+                    "Atender 24/7?",
+                    "Escalar sem aumentar equipe?"
+                ]
+            },
+            {
+                id: "3.7",
+                title: "3.7 Processo Comercial",
+                items: [
+                    "Qual o orçamento disponível para essa solução?",
+                    "Quem são os decisores envolvidos na compra?",
+                    "Qual o processo de aprovação interno?",
+                    "Qual a urgência dessa implementação?"
+                ]
+            }
+        ];
+
+        // --- DATA: Tratamento de Objeções ---
+        const objecoesData = [
+            {
+                id: "ia_entender",
+                trigger: "A IA não vai entender meu cliente",
+                response: "Nossa IA é treinada especificamente com o contexto do SEU negócio. Você fornece FAQs, catálogo, políticas, e ela aprende. Além disso, quando não souber responder, transfere para humano automaticamente. Várias empresas do seu setor já usam com 95%+ de satisfação.",
+                extraTitle: "Contra-argumento",
+                extra: "Pergunte: 'Sua equipe nunca erra ou tem dias ruins? A IA mantém padrão 24/7.'"
+            },
+            {
+                id: "caro",
+                trigger: "É muito caro",
+                response: "Vamos calcular juntos: quanto você gasta hoje com salários + encargos + treinamento de 3 atendentes? Provavelmente R$ 6.000-10.000/mês. Com o AtendeBot Scale você paga R$ 1.497 e dobra a capacidade de atendimento. É investimento, não custo.",
+                extraTitle: "ROI Comprovado",
+                extra: "Clientes aumentam conversão em 30-50% no primeiro trimestre."
+            },
+            {
+                id: "resistencia",
+                trigger: "Meu time vai resistir",
+                response: "Entendo a preocupação. Mas a IA não substitui seu time, ela libera eles das tarefas chatas e repetitivas. Imagine seu melhor vendedor respondendo 'qual o horário?' 50 vezes por dia. Com o AtendeBot, ele foca apenas em fechar vendas. Seu time vai AMAR.",
+                extraTitle: "Posicionamento",
+                extra: "A ferramenta dá superpoderes à equipe, não os substitui."
+            },
+            {
+                id: "sem_tempo",
+                trigger: "Não tenho tempo para implementar",
+                response: "No plano Pro, nossa equipe implementa TUDO pra você. Nos outros planos, o builder visual é tão simples que você configura em menos de 2 horas. E temos suporte dedicado durante toda implementação. Quanto tempo você perde por dia gerenciando atendimento manualmente?",
+                extraTitle: "Argumento Forte",
+                extra: "2 horas de setup vs 40 horas/semana desperdiçadas. Vale a pena."
+            },
+            {
+                id: "ja_tentei",
+                trigger: "Já tentamos algo assim e não funcionou",
+                response: "Ótimo que já entende o valor da automação! O que não funcionou na ferramenta anterior? (deixe falar). Provavelmente foi porque: 1) IA genérica, não treinada pro seu negócio, 2) Ferramenta complicada, ou 3) Falta de suporte. O AtendeBot resolve esses 3 pontos.",
+                extraTitle: "Validação",
+                extra: "Use a experiência ruim anterior como referência do que NÃO fazer."
+            }
+        ];
+
+        // --- COMPONENTS ---
+
+        const Icon = ({ name, size = 20, className = "" }) => {
+            React.useEffect(() => {
+                lucide.createIcons();
+            }, [name]);
+            return <i data-lucide={name} width={size} height={size} className={className}></i>;
+        };
+
+        const ChecklistItem = ({ item, isChecked, onToggle }) => {
+            const isObj = typeof item === 'object';
+            const text = isObj ? item.text : item;
+            const indent = isObj && item.indent ? "ml-6 border-l-2 border-gray-200 pl-3" : "";
+
+            return (
+                <div 
+                    onClick={onToggle}
+                    className={`flex items-start p-3 gap-3 hover:bg-gray-50 cursor-pointer transition-colors rounded-lg ${indent} ${isChecked ? 'opacity-60' : ''}`}
+                >
+                    <div className={`mt-0.5 min-w-[20px] h-5 rounded border flex items-center justify-center transition-colors ${isChecked ? 'bg-blue-600 border-blue-600' : 'border-gray-300 bg-white'}`}>
+                        {isChecked && <Icon name="check" size={14} className="text-white" />}
+                    </div>
+                    <span className={`text-sm sm:text-base text-gray-700 leading-relaxed ${isChecked ? 'line-through text-gray-500' : ''}`}>
+                        {text}
+                    </span>
+                </div>
+            );
+        };
+
+        const RoteiroView = () => {
+            const [checkedState, setCheckedState] = useState({});
+
+            // Load from local storage
+            useEffect(() => {
+                const saved = localStorage.getItem('sales_checklist');
+                if (saved) setCheckedState(JSON.parse(saved));
+            }, []);
+
+            // Save to local storage
+            useEffect(() => {
+                localStorage.setItem('sales_checklist', JSON.stringify(checkedState));
+            }, [checkedState]);
+
+            const toggleCheck = (sectionId, index) => {
+                const key = `${sectionId}-${index}`;
+                setCheckedState(prev => ({
+                    ...prev,
+                    [key]: !prev[key]
+                }));
+            };
+
+            const resetChecklist = () => {
+                if (confirm('Tem certeza que deseja limpar todo o checklist?')) {
+                    setCheckedState({});
+                }
+            };
+
+            const calculateProgress = () => {
+                let total = 0;
+                let checked = 0;
+                roteiroData.forEach(section => {
+                    section.items.forEach((_, idx) => {
+                        total++;
+                        if (checkedState[`${section.id}-${idx}`]) checked++;
+                    });
+                });
+                return total === 0 ? 0 : Math.round((checked / total) * 100);
+            };
+
+            const progress = calculateProgress();
+
+            return (
+                <div className="fade-in pb-20">
+                    <div className="flex justify-between items-center mb-6 bg-white p-4 rounded-xl shadow-sm border border-gray-100 sticky top-0 z-10">
+                        <div>
+                            <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Progresso da Call</p>
+                            <div className="flex items-center gap-2">
+                                <div className="w-32 h-2 bg-gray-200 rounded-full overflow-hidden">
+                                    <div className="h-full bg-blue-600 transition-all duration-500" style={{ width: `${progress}%` }}></div>
+                                </div>
+                                <span className="text-sm font-medium text-blue-700">{progress}%</span>
+                            </div>
+                        </div>
+                        <button 
+                            onClick={resetChecklist}
+                            className="text-xs flex items-center gap-1 text-gray-500 hover:text-red-600 transition-colors px-3 py-1.5 rounded-md hover:bg-red-50"
+                        >
+                            <Icon name="rotate-ccw" size={14} />
+                            Limpar
+                        </button>
+                    </div>
+
+                    <div className="space-y-6">
+                        {roteiroData.map((section) => (
+                            <div key={section.id} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                                <div className="bg-gray-50 px-5 py-3 border-b border-gray-100">
+                                    <h3 className="font-semibold text-gray-800 text-lg flex items-center gap-2">
+                                        <span className="text-blue-600">{section.id}</span>
+                                        {section.title.replace(section.id, '')}
+                                    </h3>
+                                </div>
+                                <div className="p-2">
+                                    {section.items.map((item, idx) => (
+                                        <ChecklistItem 
+                                            key={idx} 
+                                            item={item} 
+                                            isChecked={!!checkedState[`${section.id}-${idx}`]}
+                                            onToggle={() => toggleCheck(section.id, idx)}
+                                        />
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const ObjecoesView = () => {
+            const [selectedId, setSelectedId] = useState(null);
+            const [copySuccess, setCopySuccess] = useState(null);
+
+            const selectedObjection = useMemo(() => 
+                objecoesData.find(obj => obj.id === selectedId), 
+            [selectedId]);
+
+            const handleCopy = (text) => {
+                navigator.clipboard.writeText(text);
+                setCopySuccess(true);
+                setTimeout(() => setCopySuccess(false), 2000);
+            };
+
+            return (
+                <div className="fade-in h-[calc(100vh-140px)] flex flex-col md:flex-row gap-6">
+                    {/* Sidebar / List */}
+                    <div className="w-full md:w-1/3 flex flex-col gap-2 overflow-y-auto pr-2 pb-10">
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Selecione o que o cliente disse:</p>
+                        {objecoesData.map((obj) => (
+                            <button
+                                key={obj.id}
+                                onClick={() => setSelectedId(obj.id)}
+                                className={`text-left p-4 rounded-xl border transition-all duration-200 group relative
+                                    ${selectedId === obj.id 
+                                        ? 'bg-blue-600 border-blue-600 text-white shadow-md transform scale-[1.02]' 
+                                        : 'bg-white border-gray-200 text-gray-700 hover:border-blue-300 hover:bg-blue-50'
+                                    }`}
+                            >
+                                <div className="flex justify-between items-center">
+                                    <span className="font-medium pr-4">"{obj.trigger}"</span>
+                                    <Icon name="chevron-right" size={16} className={`transition-transform ${selectedId === obj.id ? 'opacity-100 translate-x-1' : 'opacity-40'}`} />
+                                </div>
+                            </button>
+                        ))}
+                    </div>
+
+                    {/* Content Area */}
+                    <div className="w-full md:w-2/3 bg-white rounded-2xl shadow-sm border border-gray-200 p-6 md:p-8 relative flex flex-col overflow-hidden">
+                        {selectedObjection ? (
+                            <div className="fade-in flex flex-col h-full overflow-y-auto">
+                                <div className="mb-6 pb-6 border-b border-gray-100">
+                                    <span className="inline-block px-3 py-1 bg-red-100 text-red-700 text-xs font-bold rounded-full mb-3">
+                                        OBJEÇÃO DETECTADA
+                                    </span>
+                                    <h2 className="text-2xl font-bold text-gray-800">"{selectedObjection.trigger}"</h2>
+                                </div>
+
+                                <div className="space-y-6">
+                                    <div className="bg-blue-50 p-6 rounded-xl border border-blue-100 relative group">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <Icon name="message-circle" className="text-blue-600" size={20} />
+                                            <h3 className="font-bold text-blue-900">Script de Resposta</h3>
+                                        </div>
+                                        <p className="text-gray-800 leading-relaxed text-lg">
+                                            {selectedObjection.response}
+                                        </p>
+                                        
+                                        <button 
+                                            onClick={() => handleCopy(selectedObjection.response)}
+                                            className="absolute top-4 right-4 p-2 bg-white rounded-lg text-gray-400 hover:text-blue-600 shadow-sm border border-transparent hover:border-blue-200 transition-all opacity-0 group-hover:opacity-100"
+                                            title="Copiar script"
+                                        >
+                                            {copySuccess ? <Icon name="check" size={18} className="text-green-500"/> : <Icon name="copy" size={18} />}
+                                        </button>
+                                    </div>
+
+                                    <div className="bg-amber-50 p-5 rounded-xl border border-amber-100">
+                                        <div className="flex items-center gap-2 mb-2">
+                                            <Icon name="lightbulb" className="text-amber-600" size={18} />
+                                            <h3 className="font-bold text-amber-900 text-sm uppercase">{selectedObjection.extraTitle}</h3>
+                                        </div>
+                                        <p className="text-gray-800 italic">
+                                            {selectedObjection.extra}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <div className="flex flex-col items-center justify-center h-full text-gray-400 text-center p-10">
+                                <div className="bg-gray-50 p-6 rounded-full mb-4">
+                                    <Icon name="shield-alert" size={48} className="text-gray-300" />
+                                </div>
+                                <h3 className="text-lg font-medium text-gray-600 mb-2">Aguardando Objeção</h3>
+                                <p className="max-w-xs text-sm">Selecione uma objeção na lista ao lado para visualizar a melhor estratégia de contorno.</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [activeTab, setActiveTab] = useState('roteiro'); // 'roteiro' | 'objecoes'
+
+            useEffect(() => {
+                lucide.createIcons();
+            }, [activeTab]);
+
+            return (
+                <div className="min-h-screen bg-gray-100 flex flex-col">
+                    {/* Header */}
+                    <header className="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-20">
+                        <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                            <div className="flex justify-between items-center h-16">
+                                <div className="flex items-center gap-2">
+                                    <div className="bg-blue-600 p-1.5 rounded-lg">
+                                        <Icon name="zap" className="text-white" size={20} />
+                                    </div>
+                                    <h1 className="text-xl font-bold text-gray-900 tracking-tight">Sales<span className="text-blue-600">Master</span></h1>
+                                </div>
+                                
+                                <nav className="flex space-x-2">
+                                    <button
+                                        onClick={() => setActiveTab('roteiro')}
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2
+                                            ${activeTab === 'roteiro' 
+                                                ? 'bg-gray-900 text-white shadow-lg shadow-gray-200' 
+                                                : 'text-gray-600 hover:bg-gray-100'}`}
+                                    >
+                                        <Icon name="list-checks" size={18} />
+                                        <span className="hidden sm:inline">Roteiro de Qualificação</span>
+                                        <span className="sm:hidden">Roteiro</span>
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('objecoes')}
+                                        className={`px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2
+                                            ${activeTab === 'objecoes' 
+                                                ? 'bg-red-600 text-white shadow-lg shadow-red-200' 
+                                                : 'text-gray-600 hover:bg-gray-100'}`}
+                                    >
+                                        <Icon name="shield" size={18} />
+                                        <span className="hidden sm:inline">Tratamento de Objeções</span>
+                                        <span className="sm:hidden">Objeções</span>
+                                    </button>
+                                </nav>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Main Content */}
+                    <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                        {activeTab === 'roteiro' ? <RoteiroView /> : <ObjecoesView />}
+                    </main>
+
+                    {/* Footer */}
+                    <footer className="bg-white border-t border-gray-200 mt-auto py-6">
+                        <div className="max-w-5xl mx-auto px-4 text-center text-gray-400 text-sm">
+                            <p>© {new Date().getFullYear()} SalesMaster Tool. Ferramenta de apoio à vendas.</p>
+                        </div>
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
